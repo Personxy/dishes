@@ -16,8 +16,17 @@ exports.getAllDishes = async (req, res) => {
 // 在创建菜品时增加分类存在性校验
 exports.createDish = async (req, res) => {
   try {
-    const { name, description, price, category } = req.body;
-    // console.log(name, category, "ns");
+    const { 
+      name, 
+      description, 
+      price, 
+      category, 
+      cookingTime, 
+      difficulty, 
+      ingredients, 
+      cookingSteps, 
+      cookingTips 
+    } = req.body;
 
     // 统一错误响应方法
     const errorResponse = (statusCode, message, details = {}) => {
@@ -50,6 +59,21 @@ exports.createDish = async (req, res) => {
       return errorResponse(400, "该分类下已存在相同名称的菜品", { existingDish });
     }
 
+    // 验证食材列表
+    if (ingredients && !Array.isArray(ingredients)) {
+      return errorResponse(400, "食材清单必须是数组格式", { ingredients });
+    }
+
+    // 验证烹饪步骤
+    if (cookingSteps && !Array.isArray(cookingSteps)) {
+      return errorResponse(400, "烹饪步骤必须是数组格式", { cookingSteps });
+    }
+
+    // 验证烹饪难度
+    if (difficulty && (difficulty < 1 || difficulty > 5)) {
+      return errorResponse(400, "烹饪难度必须在1-5之间", { difficulty });
+    }
+
     // 创建新菜品
     const newDish = new Dish(req.body);
     const savedDish = await newDish.save();
@@ -78,7 +102,15 @@ exports.createDish = async (req, res) => {
 exports.updateDish = async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, category } = req.body;
+    const { 
+      name, 
+      category, 
+      cookingTime, 
+      difficulty, 
+      ingredients, 
+      cookingSteps, 
+      cookingTips 
+    } = req.body;
 
     // 统一错误响应方法
     const errorResponse = (statusCode, message, details = {}) => {
@@ -118,6 +150,21 @@ exports.updateDish = async (req, res) => {
       if (duplicateDish) {
         return errorResponse(400, "该分类下已存在相同名称的菜品", { existingDish: duplicateDish });
       }
+    }
+
+    // 验证食材列表
+    if (ingredients && !Array.isArray(ingredients)) {
+      return errorResponse(400, "食材清单必须是数组格式", { ingredients });
+    }
+
+    // 验证烹饪步骤
+    if (cookingSteps && !Array.isArray(cookingSteps)) {
+      return errorResponse(400, "烹饪步骤必须是数组格式", { cookingSteps });
+    }
+
+    // 验证烹饪难度
+    if (difficulty && (difficulty < 1 || difficulty > 5)) {
+      return errorResponse(400, "烹饪难度必须在1-5之间", { difficulty });
     }
 
     // 更新菜品
