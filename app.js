@@ -2,11 +2,8 @@ require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const connectDB = require("./config/db");
-const dishRoutes = require("./routes/dishRoutes");
-const categoryRoutes = require("./routes/categoryRoutes");
-const userRoutes = require("./routes/userRoutes");
-const orderRoutes = require("./routes/orderRoutes");
 const errorHandler = require("./middlewares/errorHandler");
+const setupRoutes = require("./routes");
 
 const app = express();
 
@@ -18,10 +15,7 @@ app.use(cors());
 connectDB();
 
 // 路由
-app.use("/api/dishes", dishRoutes);
-app.use("/api/categories", categoryRoutes);
-app.use("/api/users", userRoutes);
-app.use("/api/orders", orderRoutes);
+setupRoutes(app);
 
 // 错误处理
 app.use(errorHandler);
