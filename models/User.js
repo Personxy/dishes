@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-const bcrypt = require("bcrypt");
+const bcrypt = require("bcryptjs");
 
 const userSchema = new mongoose.Schema({
   username: {
@@ -10,13 +10,23 @@ const userSchema = new mongoose.Schema({
   },
   password: {
     type: String,
-    required: [true, "密码不能为空"],
+    required: function() {
+      // 如果是微信登录用户（有wechat.openid）则不要求密码
+      return !this.wechat || !this.wechat.openid;
+    },
     minlength: 6,
   },
   phone: {
     type: String,
-    required: [true, "手机号不能为空"],
+    required: function() {
+      // 如果是微信登录用户（有wechat.openid）则不要求手机号
+      return !this.wechat || !this.wechat.openid;
+    },
     match: [/^1[3-9]\d{9}$/, "手机号格式不正确"],
+  },
+  avatar: {
+    type: String,
+    default: "default-avatar.png"
   },
   createdAt: {
     type: Date,
@@ -37,7 +47,7 @@ const userSchema = new mongoose.Schema({
 
 // 密码加密中间件
 userSchema.pre("save", async function (next) {
-  if (!this.isModified("password")) return next();
+  if (!this.isModified("password") || !this.password) return next();
   this.password = await bcrypt.hash(this.password, 12);
   next();
 });
