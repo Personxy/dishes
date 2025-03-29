@@ -1,10 +1,12 @@
 const express = require("express");
 const router = express.Router();
 const dishController = require("../controllers/dishController");
+const auth = require("../middlewares/auth");
 
-router.get("/", dishController.getAllDishes);
-router.post("/", dishController.createDish);
-router.put("/:id", dishController.updateDish);
-router.delete("/:id", dishController.deleteDish);
+
+router.get("/",auth, dishController.getAllDishes);
+router.post("/", auth, dishController.createDish);
+router.put("/:id", auth, dishController.updateDish);
+router.delete("/:id", auth, dishController.deleteDish);
 
 module.exports = router;
