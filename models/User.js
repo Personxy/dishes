@@ -19,11 +19,32 @@ const userSchema = new mongoose.Schema({
   phone: {
     type: String,
     required: function() {
-      // 如果是微信登录用户（有wechat.openid）则不要求手机号
-      return !this.wechat || !this.wechat.openid;
+      // 如果是微信登录用户或邮箱用户则不要求手机号
+      return !this.wechat?.openid && !this.email;
     },
     match: [/^1[3-9]\d{9}$/, "手机号格式不正确"],
   },
+  email: {
+    type: String,
+    match: [/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/, "邮箱格式不正确"],
+    unique: true,
+    sparse: true
+  },
+  emailVerified: {
+    type: Boolean,
+    default: false
+  },
+  // 添加邮箱验证码相关字段
+  emailVerificationCode: String,
+  emailVerificationCodeExpires: Date,
+  // 原有字段
+  verificationToken: String,
+  verificationTokenExpires: Date,
+  resetPasswordToken: String,
+  resetPasswordExpires: Date,
+  // 添加密码重置验证码相关字段
+  resetPasswordCode: String,
+  resetPasswordCodeExpires: Date,
   avatar: {
     type: String,
     default: "default-avatar.png"
@@ -51,5 +72,10 @@ userSchema.pre("save", async function (next) {
   this.password = await bcrypt.hash(this.password, 12);
   next();
 });
+
+// 验证密码方法
+userSchema.methods.comparePassword = async function(candidatePassword) {
+  return await bcrypt.compare(candidatePassword, this.password);
+};
 
 module.exports = mongoose.model("User", userSchema);
